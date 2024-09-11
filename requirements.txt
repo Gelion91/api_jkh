@@ -1,0 +1,13 @@
+django
+djangorestframework
+markdown
+django-filter
+gunicorn
+psycopg2-binary
+djoser
+djangorestframework-simplejwt
+django-cors-headers
+drf_writable_nested
+drf-spectacular
+celery[redis]
+python-dotenv

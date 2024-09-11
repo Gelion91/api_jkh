@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  api_postgres:
+    image: postgres
+    container_name: api_postgres
+    volumes:
+      - ~/.pg/pg_data/api_user:/var/lib/postgresql/data
+    env_file:
+      - .env
+  api_jkh:
+    image: api_jkh:latest
+    container_name: api_jkh
+    depends_on:
+      - api_postgres
+    volumes:
+      - static_volume:/api_user/static
+      - media_volume:/api_user/media
+    env_file:
+      - .env
+    command: >
+      bash -c "./api_jkh/manage.py collectstatic --noinput && ./api_jkh/manage.py migrate && cd api_jkh && gunicorn api_jkh.wsgi:application --bind 0.0.0.0:8000"
+    expose:
+      - 8000
+  celery:
+    build: ./api_jkh
+    command: celery worker --app=api_jkh --loglevel=info
+    volumes:
+      - ./project:/usr/src/app
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - api_jkh
+      - redis
+
+  redis:
+    image: redis:5-alpine
+
+  nginx:
+    build: ./docker/nginx
+    ports:
+      - 1337:80
+    container_name: api_nginx
+    image: api_nginx
+    depends_on:
+      - api_jkh
+
+volumes:
+  static_volume:
+  media_volume:
