@@ -40,12 +40,32 @@ class WaterMeter(models.Model):
     date_create = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     date_update = models.DateTimeField(auto_now=True, verbose_name='Дата изменения')
 
+    class Meta:
+        verbose_name = 'Счетчик'
+        verbose_name_plural = 'счетчики'
+        ordering = ['-date_create']
+
+    def __str__(self):
+        if self.inventory_number:
+            return self.inventory_number
+        return self.pk
+
 
 class Month(models.Model):
     month = models.CharField(max_length=100, verbose_name='Месяц', null=False)
     water_meter = models.ForeignKey(WaterMeter, on_delete=models.CASCADE, related_name='month',
                                          verbose_name='Счетчик')
     quantity = models.FloatField(verbose_name='Показания', default=0)
+
+    class Meta:
+        verbose_name = 'Месяц'
+        verbose_name_plural = 'Месяцы'
+        ordering = ['-id']
+
+    def __str__(self):
+        if self.month:
+            return self.month
+        return self.pk
 
 
 class Rate(models.Model):
@@ -54,8 +74,18 @@ class Rate(models.Model):
     apartment = models.OneToOneField(Apartment, on_delete=models.CASCADE, related_name="apartment_rate",
                                      primary_key=True)
 
+    class Meta:
+        verbose_name = 'Тариф'
+        verbose_name_plural = 'Тарифы'
+        ordering = ['-id']
+
 
 class Payment(models.Model):
     water_payment = models.FloatField(verbose_name='Тариф за 1куб/м. воды')
     maintenance_payment = models.FloatField(verbose_name='Содержание общего имущества')
     month_payment = models.OneToOneField(Month, on_delete=models.CASCADE, related_name="payment")
+
+    class Meta:
+        verbose_name = 'Оплата'
+        verbose_name_plural = 'Оплаты'
+        ordering = ['-id']
